@@ -77,6 +77,10 @@ export class MultiSelect extends tarhon.observeComponent(HTMLElement) {
       'border-radius': '5px',
       'padding': '7px'
     },
+    '.open .selector': {
+      'border-bottom-right-radius': 0,
+      'border-bottom-left-radius': 0,
+    },
     '.disabled .selector': {
       'background-color': '#F3F4F6'
     },
