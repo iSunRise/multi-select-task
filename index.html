@@ -41,7 +41,22 @@
     <br>
     <hr>
     <br>
-    <multi-select placeholder="Pick options" selected="Green,Pink">
+    <multi-select placeholder="Pick options" selected="Green,Pink" required="true">
+      <template>
+        <option color="#FFEDD5" value="Orange">Orange</option>
+        <option color="#FEE2E2" value="Red">Red</option>
+        <option color="#F3E8FF" value="Purple">Purple</option>
+        <option color="#DCFCE7" value="Green">Green</option>
+        <option color="#FCE7F3" value="Pink">Pink</option>
+        <option color="#DBEAFE" value="Blue">Blue</option>
+        <option color="#E5E7EB" value="long">Option with very long and boring text</option>
+      </template>
+    </multi-select>
+
+    <br>
+    <hr>
+    <br>
+    <multi-select placeholder="Pick options" selected="Green,Pink,Orange,Wrong" disabled="true">
       <template>
         <option color="#FFEDD5" value="Orange">Orange</option>
         <option color="#FEE2E2" value="Red">Red</option>

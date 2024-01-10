@@ -39,6 +39,20 @@ export class MultiSelect extends tarhon.observeComponent(HTMLElement) {
       'cursor': 'pointer',
       'user-select': 'none'
     },
+    '.disabled .clickable': {
+      'cursor': 'initial'
+    },
+    'label': {
+      'font-size': '16px',
+      'font-weight': 600,
+      'color': '#1F2937',
+      'display': 'block',
+      'margin-bottom': '5px'
+    },
+    'label .required': {
+      'visibility': 'hidden',
+      'color': '#DC2626'
+    },
     '.selector': {
       'display': 'flex',
       'width': '100%',
@@ -48,9 +62,8 @@ export class MultiSelect extends tarhon.observeComponent(HTMLElement) {
       'border-radius': '5px',
       'padding': '7px'
     },
-    '.open .selector': {
-      'border-bottom-right-radius': 0,
-      'border-bottom-left-radius': 0
+    '.disabled .selector': {
+      'background-color': '#F3F4F6'
     },
     '.options-container': {
       'display': 'flex',
@@ -70,7 +83,7 @@ export class MultiSelect extends tarhon.observeComponent(HTMLElement) {
     '.controls-container': {
       'display': 'flex',
       'gap': '5px',
-      'height': '20px',
+      'height': '23px',
       'flex-basis': '45px',
       'flex-shrink': 0,
       'margin-left': 'auto',
@@ -140,13 +153,19 @@ export class MultiSelect extends tarhon.observeComponent(HTMLElement) {
 
     this.#placeholder = this.getAttribute('placeholder');
     this.#disabled = this.getAttribute('disabled');
+    this.#required = this.getAttribute('required');
     this.#error = this.getAttribute('error');
 
 
     // assume that options are provided as child template
     this.querySelector('template').content.querySelectorAll('option').forEach((optionNode) => {
-      let colorValue = optionNode.getAttribute('color');
-      if (!CSS.supports('color', colorValue)) colorValue = '#E5E7EB';
+      let colorValue
+      if (!this.#disabled) {
+        colorValue = optionNode.getAttribute('color');
+        if (!CSS.supports('color', colorValue)) colorValue = '#E5E7EB';
+      } else {
+        colorValue = '#E5E7EB';
+      }
 
       this.#options.push({
         color: colorValue,
@@ -174,6 +193,15 @@ export class MultiSelect extends tarhon.observeComponent(HTMLElement) {
       selectedValues.filter((val) => this.#options.findIndex((opt) => opt.value === val) !== -1)
                     .forEach((optionValue) => this.#selectOption(optionValue));
     }
+    // required
+    if (this.#required) {
+      const asteriskNode = this.renderRoot.querySelector('label .required');
+      asteriskNode.style.visibility = 'visible';
+    }
+    // disabled
+    if (this.#disabled) {
+      this.#containerNode.classList.add('disabled');
+    }
 
     this.#showHideRemoveAll();
   }
@@ -193,8 +221,7 @@ export class MultiSelect extends tarhon.observeComponent(HTMLElement) {
   }
 
   #toggleMenu = () => {
-    console.log(this, this.allOptionsSelected);
-    if (this.allOptionsSelected) return;
+    if (this.#disabled || this.allOptionsSelected) return;
 
     this.#containerNode.classList.toggle('open');
   };
@@ -215,6 +242,8 @@ export class MultiSelect extends tarhon.observeComponent(HTMLElement) {
   };
 
   #removeOption = (optionValue, event = null) => {
+    if (this.#disabled) return;
+
     event?.stopPropagation();
     // restore original option position in menu
     const option = this.#optionsContainerNode.querySelector(`.option[data-value="${optionValue}"]`);
@@ -234,7 +263,16 @@ export class MultiSelect extends tarhon.observeComponent(HTMLElement) {
   }
 
   #showHideRemoveAll = () => {
-    this.#clearAllIconNode.style.display = this.#selected.length > 0 ? 'flex' : 'none';
+    this.#clearAllIconNode.style.display = (!this.#disabled && this.#selected.length) > 0 ? 'flex' : 'none';
+  }
+
+  #renderLabel() {
+    return tarhon.html`
+      <label>
+        ${this.#label}
+        <span class="required">*<span>
+      </label>
+    `;
   }
 
   render() {
@@ -257,7 +295,7 @@ export class MultiSelect extends tarhon.observeComponent(HTMLElement) {
 
     this.renderRoot.appendChild(tarhon.html`
       <main class="container">
-        ${this.#label ? tarhon.html`<label>${this.#label}</label>` : null}
+        ${this.#label ? this.#renderLabel() : null}
         <div class="selector clickable" @click="${this.#toggleMenu}">
           <div class="options-container">
             <span class="placeholder">${this.#placeholder}</span>
