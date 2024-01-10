@@ -13,14 +13,16 @@ export class MultiSelect extends tarhon.observeComponent(HTMLElement) {
   #selected = [];
   #required = false;
   #disabled = false;
-  #error = false;
+  #helpTip = 'Help or instruction text goes here';
 
   // pre-selected nodes
   #containerNode = null;
   #optionsContainerNode = null;
-  #clearAllIconNode = null;
   #menuNode = null;
 
+  static get observedAttributes(){
+      return [];
+  }
 
   static style = tarhon.styled({
     ':host': {
@@ -49,9 +51,12 @@ export class MultiSelect extends tarhon.observeComponent(HTMLElement) {
       'display': 'block',
       'margin-bottom': '5px'
     },
-    'label .required': {
+    'label .asterisk': {
       'visibility': 'hidden',
       'color': '#DC2626'
+    },
+    '.required label .asterisk': {
+      'visibility': 'visible'
     },
     '.selector': {
       'display': 'flex',
@@ -65,6 +70,9 @@ export class MultiSelect extends tarhon.observeComponent(HTMLElement) {
     '.disabled .selector': {
       'background-color': '#F3F4F6'
     },
+    '.no-options.required .selector': {
+      'border-color': '#DC2626'
+    },
     '.options-container': {
       'display': 'flex',
       'flex-wrap': 'wrap',
@@ -74,7 +82,7 @@ export class MultiSelect extends tarhon.observeComponent(HTMLElement) {
     '.placeholder': {
       'color': '#9CA3AF',
       'font-size': '14px',
-      'line-height': '20px',
+      'line-height': '23px',
       'font-weight': 400
     },
     '.placeholder:not(:only-child)': {
@@ -90,7 +98,7 @@ export class MultiSelect extends tarhon.observeComponent(HTMLElement) {
       'align-items': 'center',
       'justify-content': 'flex-end'
     },
-    '.clear-all': {
+    '.no-options .clear-all, .disabled .clear-all': {
       'display': 'none'
     },
     '.open .controls-container .chevron': {
@@ -145,6 +153,15 @@ export class MultiSelect extends tarhon.observeComponent(HTMLElement) {
     },
     '.open .menu': {
       'display': 'flex'
+    },
+    '.help-tip': {
+      'font-size': '12px',
+      'font-weight': 400,
+      'line-height': '15px',
+      'color': '#6B7280'
+    },
+    '.required.no-options .help-tip': {
+      'color': '#B91C1C'
     }
   });
 
@@ -154,7 +171,7 @@ export class MultiSelect extends tarhon.observeComponent(HTMLElement) {
     this.#placeholder = this.getAttribute('placeholder');
     this.#disabled = this.getAttribute('disabled');
     this.#required = this.getAttribute('required');
-    this.#error = this.getAttribute('error');
+    this.#helpTip = this.getAttribute('help-tip') || this.#helpTip;
 
 
     // assume that options are provided as child template
@@ -180,7 +197,6 @@ export class MultiSelect extends tarhon.observeComponent(HTMLElement) {
 
     this.#containerNode = this.renderRoot.querySelector('.container');
     this.#optionsContainerNode = this.renderRoot.querySelector('.options-container');
-    this.#clearAllIconNode = this.renderRoot.querySelector('.clear-all');
     this.#menuNode = this.renderRoot.querySelector('.menu');
 
     // subscribe on click outside
@@ -194,16 +210,11 @@ export class MultiSelect extends tarhon.observeComponent(HTMLElement) {
                     .forEach((optionValue) => this.#selectOption(optionValue));
     }
     // required
-    if (this.#required) {
-      const asteriskNode = this.renderRoot.querySelector('label .required');
-      asteriskNode.style.visibility = 'visible';
-    }
+    if (this.#required) this.#containerNode.classList.add('required');
     // disabled
-    if (this.#disabled) {
-      this.#containerNode.classList.add('disabled');
-    }
+    if (this.#disabled) this.#containerNode.classList.add('disabled');
 
-    this.#showHideRemoveAll();
+    this.#refreshNoOptionsClass();
   }
 
   disconnectedCallback() {
@@ -236,7 +247,7 @@ export class MultiSelect extends tarhon.observeComponent(HTMLElement) {
     this.#selected.push(optionValue);
     console.log('selected', this.#selected.length, this.#selected);
     if (this.allOptionsSelected) this.#closeMenu();
-    this.#showHideRemoveAll();
+    this.#refreshNoOptionsClass();
 
     // TODO: propagate updated values outside
   };
@@ -253,7 +264,7 @@ export class MultiSelect extends tarhon.observeComponent(HTMLElement) {
     const index = this.#selected.indexOf(optionValue);
     this.#selected.splice(index, 1);
 
-    this.#showHideRemoveAll();
+    this.#refreshNoOptionsClass();
     // TODO: propagate updated values outside
   };
 
@@ -262,15 +273,19 @@ export class MultiSelect extends tarhon.observeComponent(HTMLElement) {
     [...this.#selected].forEach((optionValue) => this.#removeOption(optionValue));
   }
 
-  #showHideRemoveAll = () => {
-    this.#clearAllIconNode.style.display = (!this.#disabled && this.#selected.length) > 0 ? 'flex' : 'none';
+  #refreshNoOptionsClass = () => {
+    if (this.#selected.length === 0) {
+      this.#containerNode.classList.add('no-options');
+    } else {
+      this.#containerNode.classList.remove('no-options');
+    }
   }
 
   #renderLabel() {
     return tarhon.html`
       <label>
         ${this.#label}
-        <span class="required">*<span>
+        <span class="asterisk">*<span>
       </label>
     `;
   }
@@ -314,6 +329,7 @@ export class MultiSelect extends tarhon.observeComponent(HTMLElement) {
         <ul class="menu">
           ${menuOptions}
         </ul>
+        <span class="help-tip">${this.#helpTip ?? ''}</span>
       </main>
     `);
   }
