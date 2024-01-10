@@ -1,0 +1,59 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+      background-color: #fff;
+    }
+
+    .container {
+      width: 240px;
+      margin: 0 auto;
+    }
+  </style>
+  <title>Multi select task</title>
+</head>
+
+<body>
+  <div class="container">
+    <multi-select placeholder="Pick options">
+      <template>
+        <option color="#FFEDD5" value="Orange">Orange</option>
+        <option color="#FEE2E2" value="Red">Red</option>
+        <option color="#F3E8FF" value="Purple">Purple</option>
+        <option color="#DCFCE7" value="Green">Green</option>
+        <option color="#FCE7F3" value="Pink">Pink</option>
+        <option color="#DBEAFE" value="Blue">Blue</option>
+        <option color="#E5E7EB" value="long">Option with very long and boring text</option>
+      </template>
+    </multi-select>
+    <br>
+    <hr>
+    <br>
+    <multi-select placeholder="Pick options" selected="Green,Pink">
+      <template>
+        <option color="#FFEDD5" value="Orange">Orange</option>
+        <option color="#FEE2E2" value="Red">Red</option>
+        <option color="#F3E8FF" value="Purple">Purple</option>
+        <option color="#DCFCE7" value="Green">Green</option>
+        <option color="#FCE7F3" value="Pink">Pink</option>
+        <option color="#DBEAFE" value="Blue">Blue</option>
+        <option color="#E5E7EB" value="long">Option with very long and boring text</option>
+      </template>
+    </multi-select>
+  </div>
+
+  <script type="module" src="./src/multi-select.js"></script>
+
+</html>
