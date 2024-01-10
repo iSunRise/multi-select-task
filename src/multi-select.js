@@ -1,6 +1,11 @@
 import * as tarhon from 'https://unpkg.com/tarhon?module';
 
-
+/**
+* This is WIP implementation according to my understanding of provided design and tarhon library.
+* It lacks many features, but should be still good as a test task results.
+* I didn't found a way to re-render DOM in tarhon (I guess that's because the library has different purpose) so
+* it manipulates DOM directly, what is more efficient but not that convenient way.
+*/
 export class MultiSelect extends tarhon.observeComponent(HTMLElement) {
   static get selector() {
     return 'multi-select';
@@ -20,10 +25,15 @@ export class MultiSelect extends tarhon.observeComponent(HTMLElement) {
   #optionsContainerNode = null;
   #menuNode = null;
 
+  /**
+   * TODO: I see that if I provide a list of my properties, they will be wrapped into observable objects and put into
+   * this.attrs. However, I don't know how to subscribe on the updates or what approach to use with it.
+   */
   static get observedAttributes(){
       return [];
   }
 
+  // TODO: is there a way to add some autocomplete feature or highlight errors?
   static style = tarhon.styled({
     ':host': {
       'font-family': 'Roboto',
@@ -169,12 +179,13 @@ export class MultiSelect extends tarhon.observeComponent(HTMLElement) {
     super();
 
     this.#placeholder = this.getAttribute('placeholder');
+    this.#label = this.getAttribute('label') || this.#label;
     this.#disabled = this.getAttribute('disabled');
     this.#required = this.getAttribute('required');
     this.#helpTip = this.getAttribute('help-tip') || this.#helpTip;
 
 
-    // assume that options are provided as child template
+    // assume that options are provided as a child template
     this.querySelector('template').content.querySelectorAll('option').forEach((optionNode) => {
       let colorValue
       if (!this.#disabled) {
@@ -194,7 +205,7 @@ export class MultiSelect extends tarhon.observeComponent(HTMLElement) {
 
     this.render();
 
-
+    // grab references to key nodes for more convenience
     this.#containerNode = this.renderRoot.querySelector('.container');
     this.#optionsContainerNode = this.renderRoot.querySelector('.options-container');
     this.#menuNode = this.renderRoot.querySelector('.menu');
@@ -209,9 +220,8 @@ export class MultiSelect extends tarhon.observeComponent(HTMLElement) {
       selectedValues.filter((val) => this.#options.findIndex((opt) => opt.value === val) !== -1)
                     .forEach((optionValue) => this.#selectOption(optionValue));
     }
-    // required
+
     if (this.#required) this.#containerNode.classList.add('required');
-    // disabled
     if (this.#disabled) this.#containerNode.classList.add('disabled');
 
     this.#refreshNoOptionsClass();
